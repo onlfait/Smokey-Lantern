@@ -1,4 +1,4 @@
-<img src="docs/smokey_lantern.gif">
+<img src="docs/smokey_lantern.gif" width="400">
 #Lantern — Fireworks Ring, Carmine Vortex Strip & Smoke Machine
 
 An Arduino project that combines **WS2812B NeoPixels** and a **smoke generator** to create a magical lantern effect:
