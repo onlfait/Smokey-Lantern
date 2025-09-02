@@ -1,13 +1,13 @@
-<img src="docs/smokey_lantern.gif" width="400">
+<img src="docs/smokey_lantern.gif" width="400" align="center">
 
 # Lantern — Fireworks Ring, Million Sparks Strip & Smoke Machine (Hall Sensor Controlled)
 
 An Arduino project that combines **WS2812B NeoPixels**, a **smoke generator**, and a **Hall-effect sensor** to create an interactive magical lantern:
 
-- 🎆 A **16-LED ring** simulates fireworks with sparkles and expanding bursts.  
-- ✨ A **30-LED strip** wrapped in a spiral twinkles like **“a thousand sparks”**, using evolving color palettes.  
-- 💨 A **pump + smoke heater** cycle generates bursts of real smoke.  
-- 🧲 A **Hall-effect sensor** detects a magnet:  
+- A **16-LED ring** simulates fireworks with sparkles and expanding bursts.  
+- A **30-LED strip** wrapped in a spiral twinkles like **“a thousand sparks”**, using evolving color palettes.  
+- A **pump + smoke heater** cycle generates bursts of real smoke.  
+- A **Hall-effect sensor** detects a magnet:  
   - **Magnet present → system OFF** (LEDs black, pump + smoke off).  
   - **Magnet absent → system ON** (animations + smoke cycle start).  
 
