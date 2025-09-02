@@ -1,5 +1,4 @@
-## Lantern — Fireworks Ring, Million Sparks Strip & Smoke Machine (Arduino + FastLED + Hall Sensor)
-
+## Smokey Lantern
 <p align="center">
   <img src="docs/smokey_lantern.gif" width="250" title="Lantern demo">
 </p>
