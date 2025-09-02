@@ -1,121 +1,113 @@
-<img src="docs/smokey_lantern.gif" width="400" align="center">
+## Lantern — Fireworks Ring, Million Sparks Strip & Smoke Machine (Arduino + FastLED + Hall Sensor)
 
-# Lantern — Fireworks Ring, Million Sparks Strip & Smoke Machine (Hall Sensor Controlled)
+![Lantern demo](docs/smokey_lantern.gif)
 
-An Arduino project that combines **WS2812B NeoPixels**, a **smoke generator**, and a **Hall-effect sensor** to create an interactive magical lantern:
+Interactive lantern using WS2812B LEDs and a smoke generator.  
+Animations run continuously when a magnet is **absent** (Hall sensor detection).  
+Fireworks sparkle on a 16-LED ring, a 30-LED spiral strip twinkles with evolving palettes,  
+and a pump + smoke heater release bursts of smoke in sync.
 
-- A **16-LED ring** simulates fireworks with sparkles and expanding bursts.  
-- A **30-LED strip** wrapped in a spiral twinkles like **“a thousand sparks”**, using evolving color palettes.  
-- A **pump + smoke heater** cycle generates bursts of real smoke.  
-- A **Hall-effect sensor** detects a magnet:  
-  - **Magnet present → system OFF** (LEDs black, pump + smoke off).  
-  - **Magnet absent → system ON** (animations + smoke cycle start).  
+### Features
 
-All effects run **non-blocking**, so transitions are smooth and responsive.
+* **16-LED ring** with fireworks animation (sparkles + expanding bursts).
+* **30-LED spiral strip** with “Million Sparks” twinkling glitter effect.
+* **Smoke cycle**: 5 s smoke + pump → 2 s pump purge → 3 s rest (non-blocking).
+* **Hall sensor gating**: system only runs when magnet is absent.
+* All effects are **non-blocking** for smooth animation + smoke control.
 
----
+### Hardware
 
-## Hardware
+* **MCU**: Arduino Uno/Nano (or compatible AVR @16 MHz).
+* **LEDs**: WS2812B (NeoPixel).
+  * Ring: 16 LEDs, data pin **D5**.
+  * Strip: 30 LEDs, data pin **D9**.
+* **Smoke system**:
+  * Pump (MOSFET): **D3**.
+  * Smoke heater (MOSFET): **D6**.
+* **Hall sensor**: **D12**.
+  * Configurable polarity (`HALL_ACTIVE_LOW`).
+  * Optional pull-up (`HALL_USE_PULLUP`).
+* **Power**:
+  * LEDs: up to ~60 mA per LED → ~2.7 A max. Provide a 5 V supply ≥3 A.
+  * Smoke/pump: powered separately via MOSFETs, with **common GND**.
 
-- **MCU:** Arduino Uno (or ATmega328-based board).  
-- **LEDs:** WS2812B (NeoPixel).
-  - Ring: 16 LEDs, data pin **D5**.
-  - Strip: 30 LEDs, data pin **D9**.
-- **Smoke system:**
-  - Pump (via MOSFET): pin **D3**.
-  - Smoke heater (via MOSFET): pin **D6**.
-- **Hall sensor:** pin **D12**.  
-  - Configure polarity with `HALL_ACTIVE_LOW`.  
-  - Use `HALL_USE_PULLUP = true` if your module requires internal pull-up.
-- **Power:**
-  - LEDs: up to ~60 mA per LED @ full white → 46 LEDs ≈ **2.7 A max**.  
-    Provide a 5 V supply rated ≥3 A.  
-    Add a 1000 µF capacitor across LED supply + a 330–470 Ω resistor on data lines.
-  - Pump + smoke module: power separately with MOSFETs and shared GND.  
-    Add a flyback diode across the pump if it’s inductive.
+### Default Pinout
 
----
+* Ring: **D5**  
+* Strip: **D9**  
+* Pump: **D3**  
+* Smoke heater: **D6**  
+* Hall sensor: **D12**
 
-## Behavior
+> Adjust these in the `#define` section at the top of the sketch.
 
-### Ring (D5 — 16 LEDs)
-- Fireworks animation:
-  - Sparkles that shimmer randomly.
-  - Bursts expand outward with fading trails.
+### Wiring Tips
 
-### Strip (D9 — 30 LEDs, spiral)
-- “Million Sparks” animation:
-  - Continuous twinkling across the strip.
-  - Color drift through carmine ↔ teal ↔ purple ↔ ice palettes.
-  - Occasional bright white flashes simulate glitter.
+* Put a **330–470 Ω resistor** in series with each LED data line.  
+* Add a **1000 µF capacitor** across LED 5 V and GND near the first LED.  
+* Use proper MOSFETs (logic-level N-channel) to switch pump/smoke loads.  
+* Add a **flyback diode** across the pump (if inductive).  
+* Ensure **common ground** between Arduino, LEDs, and smoke system.
 
-### Smoke Cycle (D3 pump + D6 heater)
-- Non-blocking cycle:
-  1. **5 s** — Smoke heater + pump ON.  
-  2. **2 s** — Pump only (purge).  
-  3. **3 s** — All OFF (rest).  
-  4. Repeat while system is active.
+### Software Setup
 
-### Hall Sensor (D12)
-- **Magnet present → OFF**  
-  - LEDs black.  
-  - Pump and smoke disabled.  
-  - No CPU load (no FastLED.show calls).  
-- **Magnet removed → ON**  
-  - Animations + smoke cycle resume immediately.  
+1. Install the **FastLED** library (Arduino Library Manager → “FastLED”).  
+2. Open the `.ino` sketch in Arduino IDE / CLI / PlatformIO.  
+3. Select your board + port.  
+4. Upload the firmware.
 
-This makes the lantern interactive: hide the magnet inside the lid to “lock” the lantern, and remove it to “awaken” the fire.
+### How It Works
 
----
+* The **Hall sensor** sets `systemEnabled` true/false based on magnet presence.  
+  * Magnet present → system OFF (LEDs black, smoke off).  
+  * Magnet absent → system ON (animations + smoke cycle run).  
+* The **ring** uses a fireworks algorithm (sparkles, expanding bursts).  
+* The **strip** uses a twinkle/glitter effect, with palettes that drift over time.  
+* The **smoke state machine** cycles non-blocking: 5 s ON + 2 s purge + 3 s rest.  
+* All updates are timed using `millis()`, no blocking `delay()` calls.
 
-## Installation
+### Customization
 
-1. Clone/download this repo.
-2. Open the `.ino` file in Arduino IDE or PlatformIO.
-3. Install [**FastLED**](https://fastled.io/).
-4. Connect hardware as described above.
-5. Upload to Arduino Uno (ATmega328 @16 MHz).
+* **Brightness**: `FastLED.setBrightness(96);`
+* **Ring fireworks**: `sparkleProb`, `trailFade`, `burstProb`
+* **Strip glitter**:
+  * `TWINKLE_DECAY` (higher = faster fade)
+  * `TWINKLE_RATE` (density of sparks)
+  * `TWINKLE_WHITE_PROB` (chance of white glitter)
+  * `twinkleHueDrift` (color drift speed)
+* **Palettes**: rotates between Carmine–Teal, Carmine–Purple, Carmine–Ice.  
+* **Hall sensor**:
+  * `HALL_ACTIVE_LOW = true` → LOW = magnet present (typical modules).
+  * `HALL_STABLE_COUNT` adjusts debounce/stability filter.
 
----
+### Safety Notes
 
-## Tuning
+⚠️ **High current + heating elements**:
+* Do not power LEDs or smoke system from Arduino’s 5 V pin.  
+* Always use MOSFETs to switch the pump and smoke heater.  
+* Keep heater away from flammable materials.  
+* Supervise when smoke is active.  
 
-- **Brightness:** `BRIGHTNESS` (0–255).
-- **Ring fireworks:** `sparkleProb`, `trailFade`, `burstProb`.
-- **Strip twinkle:**  
-  - `TWINKLE_DECAY`: higher = sparks fade faster.  
-  - `TWINKLE_RATE`: more sparks per frame.  
-  - `TWINKLE_WHITE_PROB`: chance of white glitter.  
-  - `twinkleHueDrift`: how quickly base hue drifts.
-- **Palettes:** blends every 9 seconds between Carmine–Teal, Carmine–Purple, Carmine–Ice.
-- **Spiral blur:** set `LEDS_PER_TURN` to actual LEDs per spiral turn (0 disables).  
-- **Orientation:** set `bottomIsIndex0 = true` if LED 0 is at the bottom physically.
-- **Hall sensor:**  
-  - `HALL_ACTIVE_LOW = true`: LOW = magnet present (common modules).  
-  - Increase `HALL_STABLE_COUNT` if your sensor is noisy.
+### Licensing
 
----
+This project follows Fab Lab–friendly open licensing:
 
-## Demo
+* **Software (Arduino sketches, .ino/.cpp):** MIT License (`LICENSE`)  
+* **Hardware designs (schematics, PCB, CAD):** CERN-OHL-S v2.0 (`LICENSES/CERN-OHL-S-2.0.txt`)  
+* **Documentation & media (README, images):** CC BY-SA 4.0 (`LICENSES/CC-BY-SA-4.0.txt`)  
 
-<img src="docs/lantern-hall-demo.jpg" width="400">
+### License Summary
 
-*Photo: “Million Sparks” effect active, triggered by magnet removal.*
+* **MIT**: Free use, modification, and commercial use — attribution required.  
+* **CERN-OHL-S**: Hardware must remain open (strong reciprocity).  
+* **CC BY-SA**: Documentation/media can be reused if credited and shared alike.  
 
----
+### Acknowledgments
 
-## Safety Notes
-
-⚠️ **High current & heating elements:**  
-- Never power LEDs, pump, or smoke module directly from Arduino’s 5 V pin.  
-- Always use MOSFETs for switching loads.  
-- Common GND required between power supplies.  
-- Keep smoke heater away from flammable objects.  
-- Supervise operation while smoke is active.
+* [FastLED](https://fastled.io/) for the LED control library.  
+* Fab Labs & the [Fab Charter](https://fabfoundation.org/about/fab-charter/) for open-knowledge principles.  
 
 ---
 
-## License
+## NOTICE
 
-MIT — free to use, modify, and share.  
-If you build your own version, feel free to share improvements or photos!
