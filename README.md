@@ -1,6 +1,6 @@
 ## Lantern — Fireworks Ring, Million Sparks Strip & Smoke Machine (Arduino + FastLED + Hall Sensor)
 
-![Lantern demo](docs/smokey_lantern.gif width="400")
+![Lantern demo](docs/smokey_lantern.gif)
 
 Interactive lantern using WS2812B LEDs and a smoke generator.  
 Animations run continuously when a magnet is **absent** (Hall sensor detection).  
