@@ -1,198 +1,114 @@
-\# Lantern — Fireworks Ring, Carmine Vortex Strip \& Smoke Machine
+## Smokey Lantern
+<p align="center">
+  <img src="docs/smokey_lantern.gif" width="250" title="Lantern demo">
+</p>
 
+Interactive lantern using WS2812B LEDs and a smoke generator.  
+Animations run continuously when a magnet is **absent** (Hall sensor detection).  
+Fireworks sparkle on a 16-LED ring, a 30-LED spiral strip twinkles with evolving palettes,  
+and a pump + smoke heater release bursts of smoke in sync.
 
+### Features
 
-An Arduino project that combines \*\*WS2812B NeoPixels\*\* and a \*\*smoke generator\*\* to create a magical lantern effect:
+* **16-LED ring** with fireworks animation (sparkles + expanding bursts).
+* **30-LED spiral strip** with “Million Sparks” twinkling glitter effect.
+* **Smoke cycle**: 5 s smoke + pump → 2 s pump purge → 3 s rest (non-blocking).
+* **Hall sensor gating**: system only runs when magnet is absent.
+* All effects are **non-blocking** for smooth animation + smoke control.
 
-\- A \*\*16-LED ring\*\* simulates fireworks with sparkles and expanding bursts.  
+### Hardware
 
-\- A \*\*30-LED strip\*\* wrapped in a spiral produces a swirling “carmine vortex” fire effect.  
+* **MCU**: Arduino Uno/Nano (or compatible AVR @16 MHz).
+* **LEDs**: WS2812B (NeoPixel).
+  * Ring: 16 LEDs, data pin **D5**.
+  * Strip: 30 LEDs, data pin **D9**.
+* **Smoke system**:
+  * Pump (MOSFET): **D3**.
+  * Smoke heater (MOSFET): **D6**.
+* **Hall sensor**: **D12**.
+  * Configurable polarity (`HALL_ACTIVE_LOW`).
+  * Optional pull-up (`HALL_USE_PULLUP`).
+* **Power**:
+  * LEDs: up to ~60 mA per LED → ~2.7 A max. Provide a 5 V supply ≥3 A.
+  * Smoke/pump: powered separately via MOSFETs, with **common GND**.
 
-\- A \*\*pump + smoke heater\*\* cycle generates bursts of real smoke in sync with the lights.  
+### Default Pinout
 
+* Ring: **D5**  
+* Strip: **D9**  
+* Pump: **D3**  
+* Smoke heater: **D6**  
+* Hall sensor: **D12**
 
+> Adjust these in the `#define` section at the top of the sketch.
 
-All effects run \*\*non-blocking\*\*, so animations and smoke stay smooth.
+### Wiring Tips
 
+* Put a **330–470 Ω resistor** in series with each LED data line.  
+* Add a **1000 µF capacitor** across LED 5 V and GND near the first LED.  
+* Use proper MOSFETs (logic-level N-channel) to switch pump/smoke loads.  
+* Add a **flyback diode** across the pump (if inductive).  
+* Ensure **common ground** between Arduino, LEDs, and smoke system.
 
+### Software Setup
+
+1. Install the **FastLED** library (Arduino Library Manager → “FastLED”).  
+2. Open the `.ino` sketch in Arduino IDE / CLI / PlatformIO.  
+3. Select your board + port.  
+4. Upload the firmware.
+
+### How It Works
+
+* The **Hall sensor** sets `systemEnabled` true/false based on magnet presence.  
+  * Magnet present → system OFF (LEDs black, smoke off).  
+  * Magnet absent → system ON (animations + smoke cycle run).  
+* The **ring** uses a fireworks algorithm (sparkles, expanding bursts).  
+* The **strip** uses a twinkle/glitter effect, with palettes that drift over time.  
+* The **smoke state machine** cycles non-blocking: 5 s ON + 2 s purge + 3 s rest.  
+* All updates are timed using `millis()`, no blocking `delay()` calls.
+
+### Customization
+
+* **Brightness**: `FastLED.setBrightness(96);`
+* **Ring fireworks**: `sparkleProb`, `trailFade`, `burstProb`
+* **Strip glitter**:
+  * `TWINKLE_DECAY` (higher = faster fade)
+  * `TWINKLE_RATE` (density of sparks)
+  * `TWINKLE_WHITE_PROB` (chance of white glitter)
+  * `twinkleHueDrift` (color drift speed)
+* **Palettes**: rotates between Carmine–Teal, Carmine–Purple, Carmine–Ice.  
+* **Hall sensor**:
+  * `HALL_ACTIVE_LOW = true` → LOW = magnet present (typical modules).
+  * `HALL_STABLE_COUNT` adjusts debounce/stability filter.
+
+### Safety Notes
+
+⚠️ **High current + heating elements**:
+* Do not power LEDs or smoke system from Arduino’s 5 V pin.  
+* Always use MOSFETs to switch the pump and smoke heater.  
+* Keep heater away from flammable materials.  
+* Supervise when smoke is active.  
+
+### Licensing
+
+This project follows Fab Lab–friendly open licensing:
+
+* **Software (Arduino sketches, .ino/.cpp):** MIT License (`LICENSE`)  
+* **Hardware designs (schematics, PCB, CAD):** CERN-OHL-S v2.0 (`LICENSES/CERN-OHL-S-2.0.txt`)  
+* **Documentation & media (README, images):** CC BY-SA 4.0 (`LICENSES/CC-BY-SA-4.0.txt`)  
+
+### License Summary
+
+* **MIT**: Free use, modification, and commercial use — attribution required.  
+* **CERN-OHL-S**: Hardware must remain open (strong reciprocity).  
+* **CC BY-SA**: Documentation/media can be reused if credited and shared alike.  
+
+### Acknowledgments
+
+* [FastLED](https://fastled.io/) for the LED control library.  
+* Fab Labs & the [Fab Charter](https://fabfoundation.org/about/fab-charter/) for open-knowledge principles.  
 
 ---
 
-
-
-\## Hardware
-
-
-
-\- \*\*MCU:\*\* Arduino Uno (or any ATmega328-based board supported by FastLED).  
-
-\- \*\*LEDs:\*\* WS2812B (a.k.a. NeoPixel).
-
-&nbsp; - Ring: 16 LEDs, data pin \*\*D5\*\*.
-
-&nbsp; - Strip: 30 LEDs, data pin \*\*D9\*\*.
-
-\- \*\*Smoke module:\*\*
-
-&nbsp; - Pump (via MOSFET): pin \*\*D3\*\*.
-
-&nbsp; - Smoke heater (via MOSFET): pin \*\*D6\*\*.
-
-\- \*\*Power:\*\*
-
-&nbsp; - LEDs: up to ~60 mA per LED at full white → 46 LEDs = \*\*~2.7 A max\*\*.  
-
-&nbsp;   Use a 5 V supply rated ≥3 A. Add a large electrolytic capacitor (≥1000 µF) across 5 V/GND at the LEDs.  
-
-&nbsp;   Place a ~330–470 Ω resistor in series with each data line.
-
-&nbsp; - Pump/smoke module: power separately through MOSFETs. Share GND with Arduino. Add a flyback diode across the pump (if inductive).
-
-
-
----
-
-
-
-\## Behavior
-
-
-
-\### Ring (D5 — 16 LEDs)
-
-\- Fireworks effect:
-
-&nbsp; - Sparkling embers around the ring.
-
-&nbsp; - Occasional expanding bursts of color.
-
-
-
-\### Strip (D9 — 30 LEDs, spiral)
-
-\- Swirling “carmine vortex” fire:
-
-&nbsp; - Based on the \*\*Fire2012 algorithm\*\* (heat rises).
-
-&nbsp; - Carmine-to-teal/purple/ice palettes blend over time.
-
-&nbsp; - Azimuth swirl makes the fire twist like a vortex.
-
-
-
-\### Smoke Cycle (D3 pump + D6 heater)
-
-\- Non-blocking state machine:
-
-&nbsp; 1. \*\*5 s\*\* — Smoke heater + pump ON.
-
-&nbsp; 2. \*\*2 s\*\* — Pump only (purges residual smoke).
-
-&nbsp; 3. \*\*3 s\*\* — All OFF (rest).
-
-&nbsp; 4. Repeat.
-
-
-
----
-
-
-
-\## Installation
-
-
-
-1\. Clone/download this repo.
-
-2\. Open the `.ino` file in Arduino IDE or PlatformIO.
-
-3\. Install \[\*\*FastLED\*\*](https://fastled.io/) via Library Manager.
-
-4\. Connect hardware as described above.
-
-5\. Upload to Arduino Uno (ATmega328 @16 MHz).
-
-
-
----
-
-
-
-\## Tuning
-
-
-
-\- \*\*Brightness:\*\* set in `BRIGHTNESS` (0–255).
-
-\- \*\*Ring fireworks:\*\*
-
-&nbsp; - `sparkleProb`, `trailFade`, `burstProb` for density/decay.
-
-\- \*\*Strip fire physics:\*\*
-
-&nbsp; - `COOLING` (higher = calmer),  
-
-&nbsp; - `SPARKING` (more base sparks),  
-
-&nbsp; - `UPDRIFT` (faster rising heat).
-
-\- \*\*Vortex swirl:\*\* `swirlSpeed`, `swirlHueMix`.
-
-\- \*\*Spiral smoothing:\*\* set `LEDS\_PER\_TURN` to the number of LEDs per spiral turn.  
-
-&nbsp; If no spiral, set to 0.
-
-\- \*\*Orientation:\*\* set `bottomIsIndex0 = true` if LED 0 is physically at the bottom.
-
-
-
----
-
-
-
-\## Demo
-
-
-
-<img src="docs/smokey\_lantern.gif">
-
-
-
-\*Photo: Vortex effect with smoke burst.\*
-
-
-
----
-
-
-
-\## Safety Notes
-
-
-
-\*\*High current \& heating elements:\*\*
-
-\- Do not power LEDs, pump, or smoke module from the Arduino’s 5 V pin.  
-
-\- Use MOSFETs for switching loads, with common GND.  
-
-\- Keep heater away from flammable material.  
-
-\- Always supervise when smoke is active.
-
-
-
----
-
-
-
-\## License
-
-
-
-MIT — feel free to use, modify, and share.  
-
-If you build your own lantern, please share photos or improvements!
-
-
+## NOTICE
 
