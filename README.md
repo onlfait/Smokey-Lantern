@@ -50,6 +50,11 @@ and a pump + smoke heater release bursts of smoke in sync.
 * Add a **flyback diode** across the pump (if inductive).  
 * Ensure **common ground** between Arduino, LEDs, and smoke system.
 
+<p align="center">
+  <img src="docs/schema_smokey_lantern.png" title="Wiring diagram">
+</p>
+  
+
 ### Software Setup
 
 1. Install the **FastLED** library (Arduino Library Manager → “FastLED”).  
